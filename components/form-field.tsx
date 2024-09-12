@@ -9,7 +9,7 @@ interface FormFieldProps {
   placeholder?: string;
   handleChangeText: (e: string) => void;
   otherStyles: string;
-  keyboardType: string;
+  keyboardType?: string;
 }
 
 export const FormField = ({
