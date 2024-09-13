@@ -12,7 +12,7 @@ interface FormFieldProps {
   keyboardType?: string;
 }
 
-export const FormField = ({
+const FormField = ({
   title,
   value,
   placeholder,
@@ -48,3 +48,5 @@ export const FormField = ({
     </View>
   );
 };
+
+export default FormField;
