@@ -17,13 +17,23 @@ export const config = {
   storageId: "66e304a000211f6fcd46",
 };
 
+const {
+  endpoint,
+  platform,
+  projectId,
+  databaseId,
+  userCollectionId,
+  videosCollectionId,
+  storageId,
+} = config;
+
 // Init your React Native SDK
 const client = new Client();
 
 client
-  .setEndpoint(config.endpoint) // Your Appwrite Endpoint
-  .setProject(config.projectId) // Your project ID
-  .setPlatform(config.platform); // Your application ID or bundle ID.
+  .setEndpoint(endpoint) // Your Appwrite Endpoint
+  .setProject(projectId) // Your project ID
+  .setPlatform(platform); // Your application ID or bundle ID.
 
 const account = new Account(client);
 const avatars = new Avatars(client);
@@ -51,8 +61,8 @@ export const createUser = async (
     await signIn(email, password);
 
     const newUser = await databases.createDocument(
-      config.databaseId,
-      config.userCollectionId,
+      databaseId,
+      userCollectionId,
       ID.unique(),
       {
         accountId: newAccount.$id,
@@ -71,6 +81,12 @@ export const createUser = async (
 
 export const signIn = async (email: string, password: string) => {
   try {
+    const currentSession = await account.getSession("current");
+
+    if (currentSession) {
+      account.deleteSession(currentSession.$id);
+    }
+
     const session = await account.createEmailPasswordSession(email, password);
 
     return session;
@@ -88,8 +104,8 @@ export const getCurrentUser = async () => {
     }
 
     const currentUser = await databases.listDocuments(
-      config.databaseId,
-      config.userCollectionId,
+      databaseId,
+      userCollectionId,
       [Query.equal("accountId", currentAccount.$id)]
     );
 
@@ -100,5 +116,15 @@ export const getCurrentUser = async () => {
     return currentUser.documents[0];
   } catch (error) {
     console.log(error);
+  }
+};
+
+export const getAllPosts = async () => {
+  try {
+    const posts = await databases.listDocuments(databaseId, videosCollectionId);
+
+    return posts.documents;
+  } catch (error) {
+    throw new Error(error as string);
   }
 };

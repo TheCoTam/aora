@@ -33,6 +33,8 @@ const SignIn = () => {
 
       router.replace("/home");
     } catch (error) {
+      console.log(error);
+
       Alert.alert("Error", "Something went wrong!");
     } finally {
       setIsSubmitting(false);
