@@ -142,3 +142,20 @@ export const getLatestPosts = async () => {
     throw new Error(error as string);
   }
 };
+
+export const searchPosts = async (query: string | string[]) => {
+  const searchQuery = Array.isArray(query) ? query[0] : query;
+
+  try {
+    const posts = await databases.listDocuments(
+      databaseId,
+      videosCollectionId,
+      [Query.search("title", searchQuery)]
+    );
+
+    return posts.documents;
+  } catch (error) {
+    console.log(error);
+    throw new Error("Internal server error");
+  }
+};

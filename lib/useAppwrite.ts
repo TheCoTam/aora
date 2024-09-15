@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Models } from "react-native-appwrite";
-import { getAllPosts } from "./appwrite";
 import { Alert } from "react-native";
 
-const useAppwrite = (fn: () => Promise<Models.Document[]>) => {
+const useAppwrite = (
+  // fn: () => Promise<Models.Document>,
+  fn: any
+) => {
   const [data, setData] = useState<Models.Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -15,7 +17,7 @@ const useAppwrite = (fn: () => Promise<Models.Document[]>) => {
 
       setData(res);
     } catch (error) {
-      Alert.alert("Error", "Something went wrong");
+      Alert.alert("Error", "Internal server error.");
     } finally {
       setIsLoading(false);
     }

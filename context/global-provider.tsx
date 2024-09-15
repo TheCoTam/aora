@@ -1,11 +1,12 @@
 import { getCurrentUser } from "@/lib/appwrite";
 import { createContext, useContext, useEffect, useState } from "react";
+import { Models } from "react-native-appwrite";
 
 interface GlobalContextType {
   isLoggedIn: boolean;
   setIsLoggedIn: (value: boolean) => void;
-  user: User | undefined;
-  setUser: (user: User | undefined) => void;
+  user: Models.Document | undefined;
+  setUser: (user: Models.Document | undefined) => void;
   isLoading: boolean;
 }
 
@@ -13,13 +14,11 @@ interface GlobalProviderProps {
   children: React.ReactNode;
 }
 
-interface User {}
-
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
 
 const GlobalProvider = ({ children }: GlobalProviderProps) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState<User | undefined>(undefined);
+  const [user, setUser] = useState<Models.Document | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
