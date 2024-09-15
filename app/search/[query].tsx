@@ -7,10 +7,14 @@ import { searchPosts } from "@/lib/appwrite";
 import SearchInput from "@/components/search-input";
 import EmptyState from "@/components/empty-state";
 import VideoCard from "@/components/video-card";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 
 const Search = () => {
   const { query } = useLocalSearchParams();
+
+  if (!query) {
+    router.replace("/home");
+  }
 
   const { data: posts, refetch } = useAppwrite(() => searchPosts(query));
 

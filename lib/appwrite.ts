@@ -81,12 +81,6 @@ export const createUser = async (
 
 export const signIn = async (email: string, password: string) => {
   try {
-    const currentSession = await account.getSession("current");
-
-    if (currentSession) {
-      account.deleteSession(currentSession.$id);
-    }
-
     const session = await account.createEmailPasswordSession(email, password);
 
     return session;
@@ -157,5 +151,31 @@ export const searchPosts = async (query: string | string[]) => {
   } catch (error) {
     console.log(error);
     throw new Error("Internal server error");
+  }
+};
+
+export const getUserPosts = async (userId: string) => {
+  try {
+    const posts = await databases.listDocuments(
+      databaseId,
+      videosCollectionId,
+      [Query.equal("creator", userId)]
+    );
+
+    return posts.documents;
+  } catch (error) {
+    console.log(error);
+    throw new Error("Internal server error");
+  }
+};
+
+export const signOut = async () => {
+  try {
+    const session = await account.deleteSession("current");
+
+    return session;
+  } catch (error) {
+    console.log(error);
+    throw new Error("Something went wrong");
   }
 };
