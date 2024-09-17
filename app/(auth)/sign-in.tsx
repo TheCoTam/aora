@@ -35,7 +35,7 @@ const SignIn = () => {
     } catch (error) {
       console.log(error);
 
-      Alert.alert("Error", "Something went wrong!");
+      Alert.alert("Error", "Something went wrong! Please try again later.");
     } finally {
       setIsSubmitting(false);
     }

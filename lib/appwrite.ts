@@ -1,10 +1,15 @@
+import * as DocumentPicker from "expo-document-picker";
+
+import { CreateFormProps } from "@/app/(tabs)/create";
 import {
   Account,
   Avatars,
   Client,
   Databases,
+  Storage,
   ID,
   Query,
+  ImageGravity,
 } from "react-native-appwrite";
 
 export const config = {
@@ -38,6 +43,7 @@ client
 const account = new Account(client);
 const avatars = new Avatars(client);
 const databases = new Databases(client);
+const storage = new Storage(client);
 
 export const createUser = async (
   email: string,
@@ -177,5 +183,96 @@ export const signOut = async () => {
   } catch (error) {
     console.log(error);
     throw new Error("Something went wrong");
+  }
+};
+
+export const getFilePreview = async (fileId: string, type: string) => {
+  let fileUrl;
+
+  try {
+    if (type === "image") {
+      fileUrl = storage.getFilePreview(
+        storageId,
+        fileId,
+        2000,
+        2000,
+        ImageGravity.Top,
+        100
+      );
+    } else if (type === "video") {
+      fileUrl = storage.getFilePreview(storageId, fileId);
+    } else {
+      throw new Error("Invalid file type");
+    }
+
+    if (!fileUrl) {
+      throw Error;
+    }
+
+    return fileUrl;
+  } catch (error) {
+    throw new Error(error as string);
+  }
+};
+
+export const uploadFile = async (
+  file: DocumentPicker.DocumentPickerAsset | null,
+  type: string
+) => {
+  if (!file) {
+    throw new Error(`${type} not found!`);
+  }
+
+  const { mimeType, ...rest } = file;
+
+  if (!mimeType) {
+    console.log("[appwrite/uploadFile]", "Mimetype not found");
+    throw Error;
+  }
+
+  const asset = { type: mimeType, ...rest };
+
+  try {
+    const uploadedFile = await storage.createFile(
+      storageId,
+      ID.unique(),
+      asset
+    );
+
+    const fileUrl = await getFilePreview(uploadedFile.$id, type);
+
+    return fileUrl;
+  } catch (error) {
+    console.log("[appwrite/uploadFile]", error);
+    throw new Error("Failed to upload file");
+  }
+};
+
+export const createPost = async (form: CreateFormProps) => {
+  const { thumbnail, video, title, prompt, userId } = form;
+
+  try {
+    const [thumbnailUrl, videoUrl] = await Promise.all([
+      uploadFile(thumbnail, "image"),
+      uploadFile(video, "video"),
+    ]);
+
+    const newPost = await databases.createDocument(
+      databaseId,
+      videosCollectionId,
+      ID.unique(),
+      {
+        title,
+        thumbnail: thumbnailUrl,
+        video: videoUrl,
+        prompt,
+        creator: userId,
+      }
+    );
+
+    return newPost;
+  } catch (error) {
+    console.log(error);
+    throw new Error(error as string);
   }
 };
