@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import { View, Text, Image, TouchableOpacity, Alert } from "react-native";
 import React, { useState } from "react";
 import { icons } from "@/constants";
 import { ResizeMode, Video } from "expo-av";
@@ -53,7 +53,7 @@ const VideoCard = ({ video }: VideoCardProps) => {
 
       {play ? (
         <Video
-          // source={{uri: video.video}}
+          // source={{ uri: video.video }}
           source={{ uri: "https://www.w3schools.com/html/mov_bbb.mp4" }}
           className="w-full h-60 rounded-xl"
           resizeMode={ResizeMode.CONTAIN}
@@ -63,6 +63,10 @@ const VideoCard = ({ video }: VideoCardProps) => {
             if (status.didJustFinish) {
               setPlay(false);
             }
+          }}
+          onError={(error) => {
+            console.log(error);
+            Alert.alert("Error", "An error occurred while playing the video");
           }}
         />
       ) : (

@@ -24,21 +24,20 @@ const SignIn = () => {
     }
 
     setIsSubmitting(true);
-    try {
-      await signIn(form.email, form.password);
+
+    const res = await signIn(form.email, form.password);
+    if (res.isSuccess) {
       const currentUser = await getCurrentUser();
 
       setUser(currentUser);
       setIsLoggedIn(true);
 
       router.replace("/home");
-    } catch (error) {
-      console.log(error);
-
-      Alert.alert("Error", "Something went wrong! Please try again later.");
-    } finally {
-      setIsSubmitting(false);
+    } else {
+      Alert.alert("Error", res.message!);
     }
+
+    setIsSubmitting(false);
   };
 
   return (

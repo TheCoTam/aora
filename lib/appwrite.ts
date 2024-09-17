@@ -1,4 +1,4 @@
-import * as DocumentPicker from "expo-document-picker";
+import * as ImagePicker from "expo-image-picker";
 
 import { CreateFormProps } from "@/app/(tabs)/create";
 import {
@@ -89,9 +89,10 @@ export const signIn = async (email: string, password: string) => {
   try {
     const session = await account.createEmailPasswordSession(email, password);
 
-    return session;
+    return { isSuccess: true, session };
   } catch (error) {
-    throw new Error(error as string);
+    console.log(error);
+    return { isSuccess: false, message: "Invalid email or password" };
   }
 };
 
@@ -121,7 +122,11 @@ export const getCurrentUser = async () => {
 
 export const getAllPosts = async () => {
   try {
-    const posts = await databases.listDocuments(databaseId, videosCollectionId);
+    const posts = await databases.listDocuments(
+      databaseId,
+      videosCollectionId,
+      [Query.orderDesc("$createdAt")]
+    );
 
     return posts.documents;
   } catch (error) {
@@ -134,7 +139,7 @@ export const getLatestPosts = async () => {
     const posts = await databases.listDocuments(
       databaseId,
       videosCollectionId,
-      [Query.orderDesc("$createdAt"), Query.limit(7)]
+      [Query.orderDesc("$createdAt"), Query.limit(3)]
     );
 
     return posts.documents;
@@ -165,7 +170,7 @@ export const getUserPosts = async (userId: string) => {
     const posts = await databases.listDocuments(
       databaseId,
       videosCollectionId,
-      [Query.equal("creator", userId)]
+      [Query.equal("creator", userId), Query.orderDesc("$createdAt")]
     );
 
     return posts.documents;
@@ -202,35 +207,37 @@ export const getFilePreview = async (fileId: string, type: string) => {
     } else if (type === "video") {
       fileUrl = storage.getFilePreview(storageId, fileId);
     } else {
-      throw new Error("Invalid file type");
+      console.log("Invalid file type");
+      return null;
     }
 
     if (!fileUrl) {
-      throw Error;
+      console.log("fileUrl not found");
+      return null;
     }
 
     return fileUrl;
   } catch (error) {
-    throw new Error(error as string);
+    console.log(error);
+    return null;
   }
 };
 
 export const uploadFile = async (
-  file: DocumentPicker.DocumentPickerAsset | null,
+  file: ImagePicker.ImagePickerAsset | null,
   type: string
 ) => {
   if (!file) {
-    throw new Error(`${type} not found!`);
+    console.log("File not found");
+    return null;
   }
 
-  const { mimeType, ...rest } = file;
-
-  if (!mimeType) {
-    console.log("[appwrite/uploadFile]", "Mimetype not found");
-    throw Error;
-  }
-
-  const asset = { type: mimeType, ...rest };
+  const asset = {
+    name: file.fileName!,
+    type: file.mimeType!,
+    size: file.fileSize!,
+    uri: file.uri,
+  };
 
   try {
     const uploadedFile = await storage.createFile(
@@ -244,7 +251,7 @@ export const uploadFile = async (
     return fileUrl;
   } catch (error) {
     console.log("[appwrite/uploadFile]", error);
-    throw new Error("Failed to upload file");
+    return null;
   }
 };
 
@@ -252,10 +259,15 @@ export const createPost = async (form: CreateFormProps) => {
   const { thumbnail, video, title, prompt, userId } = form;
 
   try {
-    const [thumbnailUrl, videoUrl] = await Promise.all([
-      uploadFile(thumbnail, "image"),
-      uploadFile(video, "video"),
-    ]);
+    const videoUrl = await uploadFile(video, "video");
+    if (!videoUrl) {
+      return { isSuccess: false, message: "Failed to upload video!" };
+    }
+
+    const thumbnailUrl = await uploadFile(thumbnail, "image");
+    if (!thumbnailUrl) {
+      return { isSuccess: false, message: "Failed to upload thumbnail!" };
+    }
 
     const newPost = await databases.createDocument(
       databaseId,
@@ -270,9 +282,9 @@ export const createPost = async (form: CreateFormProps) => {
       }
     );
 
-    return newPost;
+    return { isSuccess: true, data: newPost };
   } catch (error) {
-    console.log(error);
-    throw new Error(error as string);
+    console.log("[appwrite/createPosts]", error);
+    return { isSuccess: false, message: "Internal server error." };
   }
 };

@@ -9,7 +9,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import { ResizeMode, Video } from "expo-av";
-import * as DocumentPicker from "expo-document-picker";
+import * as ImagePicker from "expo-image-picker";
 
 import { icons } from "@/constants";
 
@@ -22,8 +22,8 @@ import { useGlobalContext } from "@/context/global-provider";
 export interface CreateFormProps {
   title: string;
   prompt: string;
-  video: DocumentPicker.DocumentPickerAsset | null;
-  thumbnail: DocumentPicker.DocumentPickerAsset | null;
+  video: ImagePicker.ImagePickerAsset | null;
+  thumbnail: ImagePicker.ImagePickerAsset | null;
   userId: string;
 }
 
@@ -39,8 +39,14 @@ const Create = () => {
   });
 
   const openPicker = async (selectType: string) => {
-    const res = await DocumentPicker.getDocumentAsync({
-      type: selectType === "image" ? ["image/*"] : ["video/mp4", "video/gif"],
+    const res = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes:
+        selectType === "image"
+          ? ImagePicker.MediaTypeOptions.Images
+          : ImagePicker.MediaTypeOptions.Videos,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
     });
 
     if (!res.canceled) {
@@ -65,23 +71,21 @@ const Create = () => {
       return;
     }
     setUploading(true);
-    try {
-      await createPost({ ...form, userId: user?.$id! });
-
+    const res = await createPost({ ...form, userId: user?.$id! });
+    if (res.isSuccess) {
       Alert.alert("Success", "Post uploaded successfully!");
       router.push("/home");
-    } catch (error) {
-      Alert.alert("Error", error as string);
-    } finally {
-      setForm({
-        title: "",
-        video: null,
-        thumbnail: null,
-        prompt: "",
-        userId: "",
-      });
-      setUploading(false);
+    } else {
+      Alert.alert("Error", res.message);
     }
+    setForm({
+      title: "",
+      video: null,
+      thumbnail: null,
+      prompt: "",
+      userId: "",
+    });
+    setUploading(false);
   };
 
   return (
