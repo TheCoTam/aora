@@ -1,10 +1,20 @@
 import { View, Text, Image, TouchableOpacity, Alert } from "react-native";
 import React, { useState } from "react";
+import { AVPlaybackStatusSuccess, ResizeMode, Video } from "expo-av";
+import {
+  BookmarkCheck,
+  EllipsisVertical,
+  Pencil,
+  Trash2,
+} from "lucide-react-native";
+
 import { icons } from "@/constants";
-import { ResizeMode, Video } from "expo-av";
+import CustomMenu from "./custom-menu";
+import { Href, router } from "expo-router";
 
 export interface VideoCardProps {
   video: {
+    $id: string;
     title: string;
     thumbnail: string;
     video: string;
@@ -46,9 +56,29 @@ const VideoCard = ({ video }: VideoCardProps) => {
             </Text>
           </View>
         </View>
-        <View className="mt-2">
-          <Image source={icons.menu} className="w-5 h-5" resizeMode="contain" />
-        </View>
+
+        <CustomMenu
+          icon={EllipsisVertical}
+          items={[
+            {
+              title: "Bookmark",
+              icon: BookmarkCheck,
+              onPress: () => {},
+            },
+            {
+              title: "Edit",
+              icon: Pencil,
+              onPress: () => {
+                router.push(`/edit/${video.$id}` as Href<string>);
+              },
+            },
+            {
+              title: "Delete",
+              icon: Trash2,
+              onPress: () => {},
+            },
+          ]}
+        />
       </View>
 
       {play ? (
@@ -60,7 +90,7 @@ const VideoCard = ({ video }: VideoCardProps) => {
           shouldPlay
           useNativeControls
           onPlaybackStatusUpdate={(status) => {
-            if (status.didJustFinish) {
+            if ("didJustFinish" in status && status.didJustFinish) {
               setPlay(false);
             }
           }}
