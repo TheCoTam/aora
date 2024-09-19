@@ -2,10 +2,7 @@ import { useEffect, useState } from "react";
 import { Models } from "react-native-appwrite";
 import { Alert } from "react-native";
 
-const useAppwrite = (
-  // fn: () => Promise<Models.Document>,
-  fn: any
-) => {
+const useAppwrite = (fn: any) => {
   const [data, setData] = useState<Models.Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 

@@ -10,6 +10,7 @@ interface FormFieldProps {
   handleChangeText: (e: string) => void;
   otherStyles: string;
   keyboardType?: string;
+  disabled?: boolean;
 }
 
 const FormField = ({
@@ -19,6 +20,7 @@ const FormField = ({
   handleChangeText,
   otherStyles,
   keyboardType,
+  disabled,
 }: FormFieldProps) => {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -33,6 +35,7 @@ const FormField = ({
           placeholderTextColor="#7b7b8b"
           onChangeText={handleChangeText}
           secureTextEntry={title === "Password" && !showPassword}
+          editable={!disabled}
         />
 
         {title === "Password" && (

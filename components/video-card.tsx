@@ -1,6 +1,6 @@
 import { View, Text, Image, TouchableOpacity, Alert } from "react-native";
-import React, { useState } from "react";
-import { AVPlaybackStatusSuccess, ResizeMode, Video } from "expo-av";
+import { useState } from "react";
+import { ResizeMode, Video } from "expo-av";
 import {
   BookmarkCheck,
   EllipsisVertical,
@@ -11,6 +11,8 @@ import {
 import { icons } from "@/constants";
 import CustomMenu from "./custom-menu";
 import { Href, router } from "expo-router";
+import { getCurrentUser } from "@/lib/appwrite";
+import useAppwrite from "@/lib/useAppwrite";
 
 export interface VideoCardProps {
   video: {
@@ -19,6 +21,7 @@ export interface VideoCardProps {
     thumbnail: string;
     video: string;
     creator: {
+      $id: string;
       username: string;
       avatar: string;
     };
@@ -29,6 +32,17 @@ const VideoCard = ({ video }: VideoCardProps) => {
   const { title, thumbnail, creator } = video;
 
   const [play, setPlay] = useState(false);
+  const { data } = useAppwrite(getCurrentUser);
+
+  const isEditable = data.$id === creator.$id;
+
+  const editItem = {
+    title: "Edit",
+    icon: Pencil,
+    onPress: () => {
+      router.push(`/edit/${video.$id}` as Href<string>);
+    },
+  };
 
   return (
     <View className="flex-col items-center px-4 mb-14">
@@ -65,13 +79,7 @@ const VideoCard = ({ video }: VideoCardProps) => {
               icon: BookmarkCheck,
               onPress: () => {},
             },
-            {
-              title: "Edit",
-              icon: Pencil,
-              onPress: () => {
-                router.push(`/edit/${video.$id}` as Href<string>);
-              },
-            },
+            ...(isEditable ? [editItem] : []),
             {
               title: "Delete",
               icon: Trash2,

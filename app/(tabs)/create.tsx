@@ -22,8 +22,8 @@ import { useGlobalContext } from "@/context/global-provider";
 export interface CreateFormProps {
   title: string;
   prompt: string;
-  video: ImagePicker.ImagePickerAsset | null;
-  thumbnail: ImagePicker.ImagePickerAsset | null;
+  video: ImagePicker.ImagePickerAsset | string;
+  thumbnail: ImagePicker.ImagePickerAsset | string;
   userId: string;
 }
 
@@ -32,8 +32,8 @@ const Create = () => {
   const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState<CreateFormProps>({
     title: "",
-    video: null,
-    thumbnail: null,
+    video: "",
+    thumbnail: "",
     prompt: "",
     userId: "",
   });
@@ -80,8 +80,8 @@ const Create = () => {
     }
     setForm({
       title: "",
-      video: null,
-      thumbnail: null,
+      video: "",
+      thumbnail: "",
       prompt: "",
       userId: "",
     });
@@ -100,19 +100,14 @@ const Create = () => {
           placeholder="Give your video a catch title..."
           handleChangeText={(e) => setForm({ ...form, title: e })}
           otherStyles="mt-10"
+          disabled={uploading}
         />
         <View className="mt-7 space-y-2">
           <Text className="text-base text-gray-100 font-pmedium">
             Upload Video
           </Text>
           <TouchableOpacity onPress={() => openPicker("video")}>
-            {form.video ? (
-              <Video
-                source={{ uri: form.video.uri }}
-                className="w-full h-64 rounded-2xl"
-                resizeMode={ResizeMode.COVER}
-              />
-            ) : (
+            {typeof form.video === "string" ? (
               <View className="w-full h-40 px-4 bg-black-100 rounded-2xl justify-center  items-center">
                 <View className="w-14 h-14 border border-dashed border-secondary-100 justify-center items-center">
                   <Image
@@ -122,6 +117,12 @@ const Create = () => {
                   />
                 </View>
               </View>
+            ) : (
+              <Video
+                source={{ uri: form.video.uri }}
+                className="w-full h-64 rounded-2xl"
+                resizeMode={ResizeMode.COVER}
+              />
             )}
           </TouchableOpacity>
         </View>
@@ -130,13 +131,7 @@ const Create = () => {
             Thumbnail Image
           </Text>
           <TouchableOpacity onPress={() => openPicker("image")}>
-            {form.thumbnail ? (
-              <Image
-                source={{ uri: form.thumbnail.uri }}
-                className="w-full h-64 rounded-2xl"
-                resizeMode="cover"
-              />
-            ) : (
+            {typeof form.thumbnail === "string" ? (
               <View className="w-full h-16 px-4 bg-black-100 rounded-2xl justify-center items-center border-2 border-black-200 flex-row space-x-2">
                 <Image
                   source={icons.upload}
@@ -147,15 +142,22 @@ const Create = () => {
                   Choose a file
                 </Text>
               </View>
+            ) : (
+              <Image
+                source={{ uri: form.thumbnail.uri }}
+                className="w-full h-64 rounded-2xl"
+                resizeMode="cover"
+              />
             )}
           </TouchableOpacity>
         </View>
         <FormField
           title="AI Prompt"
           value={form.prompt}
-          placeholder="The Prompt you used to create this video"
+          placeholder="The Prompt you used to create this video..."
           handleChangeText={(e) => setForm({ ...form, prompt: e })}
           otherStyles="mt-7"
+          disabled={uploading}
         />
         <CustomButton
           title="Submit & Publish"

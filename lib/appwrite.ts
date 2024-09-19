@@ -11,6 +11,7 @@ import {
   Query,
   ImageGravity,
 } from "react-native-appwrite";
+import { EditFormProps } from "@/app/edit/[videoId]";
 
 export const config = {
   endpoint: "https://cloud.appwrite.io/v1",
@@ -148,6 +149,23 @@ export const getLatestPosts = async () => {
   }
 };
 
+export const getPostById = async (postId: string | string[]) => {
+  const searchQuery = Array.isArray(postId) ? postId[0] : postId;
+
+  try {
+    const post = await databases.getDocument(
+      databaseId,
+      videosCollectionId,
+      searchQuery
+    );
+
+    return post;
+  } catch (error) {
+    console.log(error);
+    return { isSuccess: false, message: "Internal server error" };
+  }
+};
+
 export const searchPosts = async (query: string | string[]) => {
   const searchQuery = Array.isArray(query) ? query[0] : query;
 
@@ -224,10 +242,10 @@ export const getFilePreview = async (fileId: string, type: string) => {
 };
 
 export const uploadFile = async (
-  file: ImagePicker.ImagePickerAsset | null,
+  file: ImagePicker.ImagePickerAsset | string,
   type: string
 ) => {
-  if (!file) {
+  if (!file || typeof file === "string") {
     console.log("File not found");
     return null;
   }
@@ -285,6 +303,55 @@ export const createPost = async (form: CreateFormProps) => {
     return { isSuccess: true, data: newPost };
   } catch (error) {
     console.log("[appwrite/createPosts]", error);
+    return { isSuccess: false, message: "Internal server error." };
+  }
+};
+
+export const fileIdExtractor = (url: string) => {
+  const regex = /files\/(.*?)\/preview/;
+  const match = url.match(regex);
+
+  return match ? match[1] : null;
+};
+
+export const editPost = async (form: EditFormProps) => {
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser) {
+    return { isSuccess: false, message: "User not found" };
+  }
+
+  if (currentUser?.$id !== form.creator.$id) {
+    return { isSuccess: false, message: "Unauthorized" };
+  }
+
+  try {
+    const prevPost = await getPostById(form.$id);
+
+    if (prevPost?.isSuccess === false) {
+      return { isSuccess: false, message: "Post not found" };
+    }
+
+    const fileId = fileIdExtractor(prevPost.thumbnail);
+
+    if (!fileId) {
+      return { isSuccess: false, message: "File Id not found" };
+    }
+
+    const newThumbnailUrl = await uploadFile(form.thumbnail, "image");
+
+    await databases.updateDocument(databaseId, videosCollectionId, form.$id, {
+      title: form.title,
+      prompt: form.prompt,
+      thumbnail: newThumbnailUrl,
+      isPublic: form.isPublic,
+    });
+
+    await storage.deleteFile(storageId, fileId);
+
+    return { isSuccess: true };
+  } catch (error) {
+    console.log("[appwrite/editPost]", error);
     return { isSuccess: false, message: "Internal server error." };
   }
 };
