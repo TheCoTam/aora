@@ -13,6 +13,7 @@ import CustomMenu from "./custom-menu";
 import { Href, router } from "expo-router";
 import { getCurrentUser } from "@/lib/appwrite";
 import useAppwrite from "@/lib/useAppwrite";
+import { useDeletePostContext } from "@/context/delete-post-provider";
 
 export interface VideoCardProps {
   video: {
@@ -26,23 +27,17 @@ export interface VideoCardProps {
       avatar: string;
     };
   };
+  refetch: () => Promise<void>;
 }
 
-const VideoCard = ({ video }: VideoCardProps) => {
+const VideoCard = ({ video, refetch }: VideoCardProps) => {
+  const { showDialog, setPostId, setRefetch } = useDeletePostContext();
   const { title, thumbnail, creator } = video;
 
   const [play, setPlay] = useState(false);
   const { data } = useAppwrite(getCurrentUser);
 
   const isEditable = data.$id === creator.$id;
-
-  const editItem = {
-    title: "Edit",
-    icon: Pencil,
-    onPress: () => {
-      router.push(`/edit/${video.$id}` as Href<string>);
-    },
-  };
 
   return (
     <View className="flex-col items-center px-4 mb-14">
@@ -79,12 +74,26 @@ const VideoCard = ({ video }: VideoCardProps) => {
               icon: BookmarkCheck,
               onPress: () => {},
             },
-            ...(isEditable ? [editItem] : []),
-            {
-              title: "Delete",
-              icon: Trash2,
-              onPress: () => {},
-            },
+            ...(isEditable
+              ? [
+                  {
+                    title: "Edit",
+                    icon: Pencil,
+                    onPress: () => {
+                      router.push(`/edit/${video.$id}` as Href<string>);
+                    },
+                  },
+                  {
+                    title: "Delete",
+                    icon: Trash2,
+                    onPress: () => {
+                      setRefetch(refetch);
+                      setPostId(video.$id);
+                      showDialog();
+                    },
+                  },
+                ]
+              : []),
           ]}
         />
       </View>

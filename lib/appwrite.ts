@@ -332,22 +332,26 @@ export const editPost = async (form: EditFormProps) => {
       return { isSuccess: false, message: "Post not found" };
     }
 
-    const fileId = fileIdExtractor(prevPost.thumbnail);
+    const hasNewThumbnail = form.thumbnail !== prevPost.thumbnail;
+    let fileId, newThumbnailUrl;
 
-    if (!fileId) {
-      return { isSuccess: false, message: "File Id not found" };
+    if (hasNewThumbnail) {
+      fileId = fileIdExtractor(prevPost.thumbnail);
+
+      if (!fileId) {
+        return { isSuccess: false, message: "File Id not found" };
+      }
+
+      newThumbnailUrl = await uploadFile(form.thumbnail, "image");
+      await storage.deleteFile(storageId, fileId);
     }
-
-    const newThumbnailUrl = await uploadFile(form.thumbnail, "image");
 
     await databases.updateDocument(databaseId, videosCollectionId, form.$id, {
       title: form.title,
       prompt: form.prompt,
-      thumbnail: newThumbnailUrl,
+      thumbnail: hasNewThumbnail ? newThumbnailUrl : form.thumbnail,
       isPublic: form.isPublic,
     });
-
-    await storage.deleteFile(storageId, fileId);
 
     return { isSuccess: true };
   } catch (error) {
@@ -411,5 +415,37 @@ export const changeUserFollowers = async (followers: number) => {
   } catch (error) {
     console.log("[appwrite/changeFollowers]", error);
     return { isSuccess: false, message: "Internal server error." };
+  }
+};
+
+export const deletePostById = async (postId: string | null) => {
+  if (!postId) {
+    return { isSuccess: false, message: "Post not found" };
+  }
+
+  try {
+    const post = await getPostById(postId);
+
+    if (post.isSuccess === false) {
+      return { isSuccess: false, message: post.message };
+    }
+
+    const thumbnailFileId = fileIdExtractor(post.thumbnail);
+    if (!thumbnailFileId) {
+      return { isSuccess: false, message: "Thumbnail file not found" };
+    }
+    const videoFileId = fileIdExtractor(post.video);
+    if (!videoFileId) {
+      return { isSuccess: false, message: "Video file not found" };
+    }
+
+    await storage.deleteFile(storageId, thumbnailFileId);
+    await storage.deleteFile(storageId, videoFileId);
+    await databases.deleteDocument(databaseId, videosCollectionId, postId);
+
+    return { isSuccess: true };
+  } catch (error) {
+    console.log(error);
+    return { isSuccess: false, message: "Internal server error" };
   }
 };

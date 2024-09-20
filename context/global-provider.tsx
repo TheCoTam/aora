@@ -2,6 +2,9 @@ import { getCurrentUser } from "@/lib/appwrite";
 import { createContext, useContext, useEffect, useState } from "react";
 import { Models } from "react-native-appwrite";
 import { PaperProvider } from "react-native-paper";
+import Toast from "react-native-toast-message";
+
+import DeletePostProvider from "./delete-post-provider";
 
 interface GlobalContextType {
   isLoggedIn: boolean;
@@ -45,7 +48,12 @@ const GlobalProvider = ({ children }: GlobalProviderProps) => {
     <GlobalContext.Provider
       value={{ isLoggedIn, setIsLoggedIn, user, setUser, isLoading }}
     >
-      <PaperProvider>{children}</PaperProvider>
+      <PaperProvider>
+        <DeletePostProvider>
+          {children}
+          <Toast />
+        </DeletePostProvider>
+      </PaperProvider>
     </GlobalContext.Provider>
   );
 };

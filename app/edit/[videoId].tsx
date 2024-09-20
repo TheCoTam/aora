@@ -19,15 +19,16 @@ import useAppwrite from "@/lib/useAppwrite";
 
 import FormField from "@/components/form-field";
 import CustomButton from "@/components/custom-button";
+import Toast from "react-native-toast-message";
 
 export interface EditFormProps {
-  $id: string;
+  $id?: string;
   title: string;
   prompt: string;
   video: ImagePicker.ImagePickerAsset | string;
   thumbnail: ImagePicker.ImagePickerAsset | string;
   isPublic: boolean;
-  creator: {
+  creator?: {
     $id: string;
     username: string;
     avatar: string;
@@ -90,10 +91,18 @@ const EditVideo = () => {
     setUploading(true);
     const res = await editPost(form);
     if (res.isSuccess) {
-      Alert.alert("Success", "Post updated successfully!");
+      Toast.show({
+        type: "success",
+        text1: "Edit Post",
+        text2: "Post updated successfully",
+      });
       router.push("/home");
     } else {
-      Alert.alert("Error", res.message);
+      Toast.show({
+        type: "error",
+        text1: "Edit Post",
+        text2: res.message,
+      });
     }
     setUploading(false);
   };

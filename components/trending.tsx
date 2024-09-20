@@ -95,7 +95,7 @@ const TrendingItem = ({ activeItem, item }: TrendingItemProps) => {
 
 const Trending = ({ posts }: TrendingProps) => {
   if (!posts.length) {
-    return <Text>No trending videos</Text>;
+    return <Text className="text-white font-pregular">No trending videos</Text>;
   }
   const [activeItem, setActiveItem] = useState(posts[0].$id);
 
