@@ -126,7 +126,7 @@ export const getAllPosts = async () => {
     const posts = await databases.listDocuments(
       databaseId,
       videosCollectionId,
-      [Query.orderDesc("$createdAt")]
+      [Query.orderDesc("$createdAt"), Query.equal("isPublic", true)]
     );
 
     return posts.documents;
@@ -444,6 +444,39 @@ export const deletePostById = async (postId: string | null) => {
     await databases.deleteDocument(databaseId, videosCollectionId, postId);
 
     return { isSuccess: true };
+  } catch (error) {
+    console.log(error);
+    return { isSuccess: false, message: "Internal server error" };
+  }
+};
+
+export const bookmarkPostById = async (postId: string) => {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return { isSuccess: false, message: "User not found!" };
+  }
+
+  try {
+    const userId = currentUser.$id;
+    const savedPosts = currentUser.savedPosts || [];
+
+    if (savedPosts.includes(postId)) {
+      const newSavedPosts = savedPosts.filter(
+        (item: string) => item !== postId
+      );
+
+      await databases.updateDocument(databaseId, userCollectionId, userId, {
+        savedPosts: newSavedPosts,
+      });
+
+      return { isSuccess: true, message: "Deleted Post from Bookmark!" };
+    }
+
+    await databases.updateDocument(databaseId, userCollectionId, userId, {
+      savedPosts: [...savedPosts, postId],
+    });
+
+    return { isSuccess: true, message: "Added Post to Bookmark!" };
   } catch (error) {
     console.log(error);
     return { isSuccess: false, message: "Internal server error" };

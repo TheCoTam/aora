@@ -45,7 +45,12 @@ const DeletePostProvider = ({ children }: { children: React.ReactNode }) => {
     <DeletePostContext.Provider value={{ showDialog, setPostId }}>
       {children}
       <Portal>
-        <Dialog visible={visible} onDismiss={hideDialog}>
+        <Dialog
+          visible={visible}
+          onDismiss={hideDialog}
+          dismissable={!isLoading}
+          dismissableBackButton={!isLoading}
+        >
           <Dialog.Title>Delete Post</Dialog.Title>
           <Dialog.Content>
             <Text className="text-white font-pregular">

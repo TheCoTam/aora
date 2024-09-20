@@ -30,6 +30,7 @@ const SearchSavedInput = ({ initialQuery }: SearchSavedInputProps) => {
               "Missing query",
               "Please input something to search results across database."
             );
+            return;
           }
 
           if (pathname.startsWith("/search")) router.setParams({ query });

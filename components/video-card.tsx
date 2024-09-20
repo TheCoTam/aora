@@ -14,6 +14,7 @@ import { Href, router } from "expo-router";
 import { getCurrentUser } from "@/lib/appwrite";
 import useAppwrite from "@/lib/useAppwrite";
 import { useDeletePostContext } from "@/context/delete-post-provider";
+import { VideoCardMenu } from "./video-card-menu";
 
 export interface VideoCardProps {
   video: {
@@ -65,36 +66,7 @@ const VideoCard = ({ video, refetch }: VideoCardProps) => {
             </Text>
           </View>
         </View>
-
-        <CustomMenu
-          icon={EllipsisVertical}
-          items={[
-            {
-              title: "Bookmark",
-              icon: BookmarkCheck,
-              onPress: () => {},
-            },
-            ...(isEditable
-              ? [
-                  {
-                    title: "Edit",
-                    icon: Pencil,
-                    onPress: () => {
-                      router.push(`/edit/${video.$id}` as Href<string>);
-                    },
-                  },
-                  {
-                    title: "Delete",
-                    icon: Trash2,
-                    onPress: () => {
-                      setPostId(video.$id);
-                      showDialog();
-                    },
-                  },
-                ]
-              : []),
-          ]}
-        />
+        <VideoCardMenu postId={video.$id} />
       </View>
 
       {play ? (
