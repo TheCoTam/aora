@@ -18,6 +18,7 @@ import { icons } from "@/constants";
 import InfoBox from "@/components/info-box";
 import { router } from "expo-router";
 import { useState } from "react";
+import FollowersDialog from "@/components/followers-dialog";
 
 const Profile = () => {
   const { user, setUser, setIsLoggedIn } = useGlobalContext();
@@ -76,7 +77,7 @@ const Profile = () => {
                 containerStyle="mr-10"
                 titleStyle="text-xl"
               />
-              <InfoBox title="1.2k" subtitle="Followers" titleStyle="text-xl" />
+              <FollowersDialog refetch={refetch} />
             </View>
           </View>
         )}

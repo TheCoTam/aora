@@ -1,6 +1,7 @@
 import { getCurrentUser } from "@/lib/appwrite";
 import { createContext, useContext, useEffect, useState } from "react";
 import { Models } from "react-native-appwrite";
+import { PaperProvider } from "react-native-paper";
 
 interface GlobalContextType {
   isLoggedIn: boolean;
@@ -44,7 +45,7 @@ const GlobalProvider = ({ children }: GlobalProviderProps) => {
     <GlobalContext.Provider
       value={{ isLoggedIn, setIsLoggedIn, user, setUser, isLoading }}
     >
-      {children}
+      <PaperProvider>{children}</PaperProvider>
     </GlobalContext.Provider>
   );
 };

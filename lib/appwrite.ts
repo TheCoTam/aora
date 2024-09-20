@@ -355,3 +355,61 @@ export const editPost = async (form: EditFormProps) => {
     return { isSuccess: false, message: "Internal server error." };
   }
 };
+
+export const formatFollowers = (followers: number): string => {
+  if (followers >= 1e9) {
+    const followersInBillion = followers / 1e9;
+    if (followersInBillion < 10) {
+      return followersInBillion.toFixed(2) + "B";
+    }
+    if (followersInBillion < 100) {
+      return followersInBillion.toFixed(1) + "B";
+    }
+    return followersInBillion.toFixed(0) + "B";
+  }
+  if (followers >= 1e6) {
+    const followersInMillion = followers / 1e6;
+    if (followersInMillion < 10) {
+      return followersInMillion.toFixed(2) + "M";
+    }
+    if (followersInMillion < 100) {
+      return followersInMillion.toFixed(1) + "M";
+    }
+    return followersInMillion.toFixed(0) + "M";
+  }
+  if (followers >= 1e3) {
+    const followersInThousand = followers / 1e3;
+    if (followersInThousand < 10) {
+      return followersInThousand.toFixed(2) + "K";
+    }
+    if (followersInThousand < 100) {
+      return followersInThousand.toFixed(1) + "K";
+    }
+    return followersInThousand.toFixed(0) + "K";
+  }
+  return followers.toString();
+};
+
+export const changeUserFollowers = async (followers: number) => {
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser) {
+    return { isSuccess: false, message: "User not found" };
+  }
+
+  try {
+    await databases.updateDocument(
+      databaseId,
+      userCollectionId,
+      currentUser.$id,
+      {
+        followers,
+      }
+    );
+
+    return { isSuccess: true };
+  } catch (error) {
+    console.log("[appwrite/changeFollowers]", error);
+    return { isSuccess: false, message: "Internal server error." };
+  }
+};

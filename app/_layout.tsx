@@ -2,7 +2,6 @@ import { StyleSheet } from "react-native";
 import { useEffect } from "react";
 import { SplashScreen, Stack } from "expo-router";
 import { useFonts } from "expo-font";
-import { PaperProvider } from "react-native-paper";
 
 import GlobalProvider from "@/context/global-provider";
 
@@ -33,21 +32,13 @@ const RootLayout = () => {
 
   return (
     <GlobalProvider>
-      <PaperProvider>
-        <Stack>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="search/[query]"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="edit/[videoId]"
-            options={{ headerShown: false }}
-          />
-        </Stack>
-      </PaperProvider>
+      <Stack>
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="search/[query]" options={{ headerShown: false }} />
+        <Stack.Screen name="edit/[videoId]" options={{ headerShown: false }} />
+      </Stack>
     </GlobalProvider>
   );
 };
