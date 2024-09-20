@@ -31,7 +31,7 @@ export interface VideoCardProps {
 }
 
 const VideoCard = ({ video, refetch }: VideoCardProps) => {
-  const { showDialog, setPostId, setRefetch } = useDeletePostContext();
+  const { showDialog, setPostId } = useDeletePostContext();
   const { title, thumbnail, creator } = video;
 
   const [play, setPlay] = useState(false);
@@ -87,7 +87,6 @@ const VideoCard = ({ video, refetch }: VideoCardProps) => {
                     title: "Delete",
                     icon: Trash2,
                     onPress: () => {
-                      setRefetch(refetch);
                       setPostId(video.$id);
                       showDialog();
                     },

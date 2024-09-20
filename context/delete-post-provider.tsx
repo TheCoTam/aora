@@ -7,7 +7,6 @@ import Toast from "react-native-toast-message";
 interface DeletePostContextType {
   showDialog: () => void;
   setPostId: (postId: string) => void;
-  setRefetch: (refetch: () => Promise<void>) => void;
 }
 
 const DeletePostContext = createContext<DeletePostContextType | undefined>(
@@ -17,7 +16,6 @@ const DeletePostContext = createContext<DeletePostContextType | undefined>(
 const DeletePostProvider = ({ children }: { children: React.ReactNode }) => {
   const [visible, setVisible] = useState(false);
   const [postId, setPostId] = useState<string | null>(null);
-  const [refetch, setRefetch] = useState<(() => Promise<void>) | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const showDialog = () => setVisible(true);
@@ -39,18 +37,12 @@ const DeletePostProvider = ({ children }: { children: React.ReactNode }) => {
         text2: "Post deleted successfully",
       });
     }
-    Toast.show({
-      type: "success",
-      text1: "Delete Post",
-      text2: "Post deleted successfully",
-    });
-
     setIsLoading(false);
     hideDialog();
   };
 
   return (
-    <DeletePostContext.Provider value={{ showDialog, setPostId, setRefetch }}>
+    <DeletePostContext.Provider value={{ showDialog, setPostId }}>
       {children}
       <Portal>
         <Dialog visible={visible} onDismiss={hideDialog}>

@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
 import { Button, Dialog, Portal } from "react-native-paper";
-import InfoBox from "./info-box";
+import { LoaderCircle } from "lucide-react-native";
+
 import useAppwrite from "@/lib/useAppwrite";
 import {
   changeUserFollowers,
   formatFollowers,
   getCurrentUser,
 } from "@/lib/appwrite";
+
+import InfoBox from "./info-box";
 
 interface FollowersDialogProps {
   refetch: () => Promise<void>;
@@ -44,13 +47,17 @@ const FollowersDialog = ({ refetch }: FollowersDialogProps) => {
 
   return (
     <View>
-      <TouchableOpacity onPress={showDialog}>
-        <InfoBox
-          title={formatFollowers(data.followers || 0)}
-          subtitle="Followers"
-          titleStyle="text-xl"
-        />
-      </TouchableOpacity>
+      {data.length === 0 ? (
+        <Button loading>Followers</Button>
+      ) : (
+        <TouchableOpacity onPress={showDialog}>
+          <InfoBox
+            title={formatFollowers(data.followers || 0)}
+            subtitle="Followers"
+            titleStyle="text-xl"
+          />
+        </TouchableOpacity>
+      )}
       <Portal>
         <Dialog visible={visible} onDismiss={hideDialog}>
           <Dialog.Title>Change Followers</Dialog.Title>

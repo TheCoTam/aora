@@ -18,6 +18,7 @@ import CustomButton from "@/components/custom-button";
 import { router } from "expo-router";
 import { createPost } from "@/lib/appwrite";
 import { useGlobalContext } from "@/context/global-provider";
+import Toast from "react-native-toast-message";
 
 export interface CreateFormProps {
   title: string;
@@ -73,10 +74,18 @@ const Create = () => {
     setUploading(true);
     const res = await createPost({ ...form, userId: user?.$id! });
     if (res.isSuccess) {
-      Alert.alert("Success", "Post uploaded successfully!");
+      Toast.show({
+        type: "success",
+        text1: "Create Post",
+        text2: "Post uploaded successfully",
+      });
       router.push("/home");
     } else {
-      Alert.alert("Error", res.message);
+      Toast.show({
+        type: "error",
+        text1: "Create Post",
+        text2: res.message,
+      });
     }
     setForm({
       title: "",
