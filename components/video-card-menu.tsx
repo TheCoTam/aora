@@ -1,21 +1,31 @@
-import { useDeletePostContext } from "@/context/delete-post-provider";
-import { bookmarkPostById } from "@/lib/appwrite";
 import { Href, router } from "expo-router";
 import {
   BookmarkCheck,
   EllipsisVertical,
+  HeartOff,
   Pencil,
   Trash2,
 } from "lucide-react-native";
+import Toast from "react-native-toast-message";
 import { useState } from "react";
 import { Text, View } from "react-native";
 import { Button, Menu } from "react-native-paper";
-import Toast from "react-native-toast-message";
+
+import { useDeletePostContext } from "@/context/delete-post-provider";
+import { bookmarkPostById } from "@/lib/appwrite";
 
 type Props = {
   postId: string;
+  isEditable: boolean;
+  isBookmarked: boolean;
+  refetch: () => Promise<void>;
 };
-export const VideoCardMenu = ({ postId }: Props) => {
+export const VideoCardMenu = ({
+  postId,
+  isEditable,
+  isBookmarked,
+  refetch,
+}: Props) => {
   const { showDialog, setPostId } = useDeletePostContext();
 
   const [visible, setVisible] = useState(false);
@@ -34,6 +44,7 @@ export const VideoCardMenu = ({ postId }: Props) => {
     });
     setIsLoading(false);
     closeMenu();
+    await refetch();
   };
 
   const handleEdit = () => {
@@ -61,35 +72,59 @@ export const VideoCardMenu = ({ postId }: Props) => {
         onPress={handleSavePost}
         title={
           isLoading ? (
-            <View className="justify-center items-center">
+            <View className="justify-center items-center opacity-50">
               <Button loading>Bookmark</Button>
             </View>
           ) : (
             <View className="flex-row items-center space-x-1.5">
-              <BookmarkCheck className="text-white" />
-              <Text className="text-white">Bookmark</Text>
+              {isBookmarked ? (
+                <>
+                  <HeartOff className="text-white" />
+                  <Text className="text-white">Unbookmark</Text>
+                </>
+              ) : (
+                <>
+                  <BookmarkCheck className="text-white" />
+                  <Text className="text-white">Bookmark</Text>
+                </>
+              )}
             </View>
           )
         }
+        disabled={isLoading}
       />
-      <Menu.Item
-        onPress={handleEdit}
-        title={
-          <View className="flex-row items-center space-x-1.5">
-            <Pencil className="text-white" />
-            <Text className="text-white">Edit</Text>
-          </View>
-        }
-      />
-      <Menu.Item
-        onPress={handleDelete}
-        title={
-          <View className="flex-row items-center space-x-1.5">
-            <Trash2 className="text-white" />
-            <Text className="text-white">Delete</Text>
-          </View>
-        }
-      />
+      {isEditable && (
+        <Menu.Item
+          onPress={handleEdit}
+          title={
+            <View
+              className={`flex-row items-center space-x-1.5 ${
+                isLoading && "opacity-50"
+              }`}
+            >
+              <Pencil className="text-white" />
+              <Text className="text-white">Edit</Text>
+            </View>
+          }
+          disabled={isLoading}
+        />
+      )}
+      {isEditable && (
+        <Menu.Item
+          onPress={handleDelete}
+          title={
+            <View
+              className={`flex-row items-center space-x-1.5 ${
+                isLoading && "opacity-50"
+              }`}
+            >
+              <Trash2 className="text-white" />
+              <Text className="text-white">Delete</Text>
+            </View>
+          }
+          disabled={isLoading}
+        />
+      )}
     </Menu>
   );
 };

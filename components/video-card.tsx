@@ -1,19 +1,10 @@
 import { View, Text, Image, TouchableOpacity, Alert } from "react-native";
 import { useState } from "react";
 import { ResizeMode, Video } from "expo-av";
-import {
-  BookmarkCheck,
-  EllipsisVertical,
-  Pencil,
-  Trash2,
-} from "lucide-react-native";
 
 import { icons } from "@/constants";
-import CustomMenu from "./custom-menu";
-import { Href, router } from "expo-router";
 import { getCurrentUser } from "@/lib/appwrite";
 import useAppwrite from "@/lib/useAppwrite";
-import { useDeletePostContext } from "@/context/delete-post-provider";
 import { VideoCardMenu } from "./video-card-menu";
 
 export interface VideoCardProps {
@@ -28,17 +19,17 @@ export interface VideoCardProps {
       avatar: string;
     };
   };
-  refetch: () => Promise<void>;
 }
 
-const VideoCard = ({ video, refetch }: VideoCardProps) => {
-  const { showDialog, setPostId } = useDeletePostContext();
+const VideoCard = ({ video }: VideoCardProps) => {
   const { title, thumbnail, creator } = video;
+  const { data: currentUser, refetch } = useAppwrite(getCurrentUser);
+
+  const isEditable = currentUser?.$id === creator.$id;
+  const savedPosts = currentUser?.savedPosts || [];
+  const isBookmarked = savedPosts.includes(video.$id);
 
   const [play, setPlay] = useState(false);
-  const { data } = useAppwrite(getCurrentUser);
-
-  const isEditable = data.$id === creator.$id;
 
   return (
     <View className="flex-col items-center px-4 mb-14">
@@ -66,7 +57,12 @@ const VideoCard = ({ video, refetch }: VideoCardProps) => {
             </Text>
           </View>
         </View>
-        <VideoCardMenu postId={video.$id} />
+        <VideoCardMenu
+          postId={video.$id}
+          isEditable={isEditable}
+          isBookmarked={isBookmarked}
+          refetch={refetch}
+        />
       </View>
 
       {play ? (
