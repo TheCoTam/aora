@@ -1,15 +1,18 @@
 import { View, Text, FlatList, Image, RefreshControl } from "react-native";
 import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Models } from "react-native-appwrite";
 
 import { useGlobalContext } from "@/context/global-provider";
+
 import useAppwrite from "@/lib/useAppwrite";
 import { getAllPosts, getLatestPosts } from "@/lib/appwrite";
 import { images } from "@/constants";
+
 import SearchInput from "@/components/search-input";
 import Trending from "@/components/trending";
 import EmptyState from "@/components/empty-state";
-import VideoCard from "@/components/video-card";
+import VideoCard, { VideoCardProps } from "@/components/video-card";
 
 const Home = () => {
   const { user } = useGlobalContext();
@@ -26,7 +29,7 @@ const Home = () => {
   return (
     <SafeAreaView className="bg-primary h-full">
       <FlatList
-        data={posts}
+        data={posts as Models.Document[] & VideoCardProps["video"][]}
         keyExtractor={(item) => item.$id}
         renderItem={({ item }) => <VideoCard video={item} />}
         ListHeaderComponent={() => (

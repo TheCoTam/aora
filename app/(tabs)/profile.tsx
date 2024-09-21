@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   View,
   FlatList,
@@ -6,18 +7,18 @@ import {
   RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { router } from "expo-router";
+import { Models } from "react-native-appwrite";
 
 import { useGlobalContext } from "@/context/global-provider";
 
 import useAppwrite from "@/lib/useAppwrite";
 import { getUserPosts, signOut } from "@/lib/appwrite";
+import { icons } from "@/constants";
 
 import EmptyState from "@/components/empty-state";
-import VideoCard from "@/components/video-card";
-import { icons } from "@/constants";
+import VideoCard, { VideoCardProps } from "@/components/video-card";
 import InfoBox from "@/components/info-box";
-import { router } from "expo-router";
-import { useState } from "react";
 import FollowersDialog from "@/components/followers-dialog";
 
 const Profile = () => {
@@ -43,7 +44,7 @@ const Profile = () => {
   return (
     <SafeAreaView className="bg-primary h-full">
       <FlatList
-        data={posts}
+        data={posts as Models.Document[] & VideoCardProps["video"][]}
         keyExtractor={(item) => item.$id}
         renderItem={({ item }) => <VideoCard video={item} />}
         ListHeaderComponent={() => (

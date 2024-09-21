@@ -10,6 +10,7 @@ import {
   ID,
   Query,
   ImageGravity,
+  Models,
 } from "react-native-appwrite";
 import { EditFormProps } from "@/app/edit/[videoId]";
 
@@ -149,7 +150,12 @@ export const getLatestPosts = async () => {
   }
 };
 
-export const getPostById = async (postId: string | string[]) => {
+export const getPostById = async (
+  postId: string | string[]
+): Promise<
+  | Models.Document
+  | { isSuccess: boolean; message: string; thumbnail?: string; video?: string }
+> => {
   const searchQuery = Array.isArray(postId) ? postId[0] : postId;
 
   try {
@@ -321,12 +327,14 @@ export const editPost = async (form: EditFormProps) => {
     return { isSuccess: false, message: "User not found" };
   }
 
-  if (currentUser?.$id !== form.creator.$id) {
+  if (currentUser?.$id !== form.creator?.$id) {
     return { isSuccess: false, message: "Unauthorized" };
   }
 
+  console.log(form);
+
   try {
-    const prevPost = await getPostById(form.$id);
+    const prevPost = await getPostById(form.$id!);
 
     if (prevPost?.isSuccess === false) {
       return { isSuccess: false, message: "Post not found" };
@@ -346,7 +354,7 @@ export const editPost = async (form: EditFormProps) => {
       await storage.deleteFile(storageId, fileId);
     }
 
-    await databases.updateDocument(databaseId, videosCollectionId, form.$id, {
+    await databases.updateDocument(databaseId, videosCollectionId, form.$id!, {
       title: form.title,
       prompt: form.prompt,
       thumbnail: hasNewThumbnail ? newThumbnailUrl : form.thumbnail,

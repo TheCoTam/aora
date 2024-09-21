@@ -7,6 +7,7 @@ import SearchSavedInput from "@/components/search-saved-input";
 const Bookmark = () => {
   return (
     <SafeAreaView className="bg-primary h-full">
+      {/* <FlatList></FlatList> */}
       <View className="my-6 px-4">
         <Text className="text-3xl text-white font-psemibold mb-4">
           Saved Videos

@@ -6,8 +6,9 @@ import useAppwrite from "@/lib/useAppwrite";
 import { searchPosts } from "@/lib/appwrite";
 import SearchInput from "@/components/search-input";
 import EmptyState from "@/components/empty-state";
-import VideoCard from "@/components/video-card";
+import VideoCard, { VideoCardProps } from "@/components/video-card";
 import { router, useLocalSearchParams } from "expo-router";
+import { Models } from "react-native-appwrite";
 
 const Search = () => {
   const { query } = useLocalSearchParams();
@@ -25,7 +26,7 @@ const Search = () => {
   return (
     <SafeAreaView className="bg-primary h-full">
       <FlatList
-        data={posts}
+        data={posts as Models.Document[] & VideoCardProps["video"][]}
         keyExtractor={(item) => item.$id}
         renderItem={({ item }) => <VideoCard video={item} />}
         ListHeaderComponent={() => (
