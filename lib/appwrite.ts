@@ -82,7 +82,7 @@ export const createUser = async (
 
     return newUser;
   } catch (error) {
-    console.log(error);
+    console.log("[appwrite/createUser]", error);
     throw new Error("Failed to create user");
   }
 };
@@ -93,7 +93,7 @@ export const signIn = async (email: string, password: string) => {
 
     return { isSuccess: true, session };
   } catch (error) {
-    console.log(error);
+    console.log("[appwrite/signIn]", error);
     return { isSuccess: false, message: "Invalid email or password" };
   }
 };
@@ -118,7 +118,8 @@ export const getCurrentUser = async () => {
 
     return currentUser.documents[0];
   } catch (error) {
-    console.log(error);
+    console.log("[appwrite/getCurrentUser]", error);
+    return null;
   }
 };
 
@@ -167,7 +168,7 @@ export const getPostById = async (
 
     return post;
   } catch (error) {
-    console.log(error);
+    console.log("[appwrite/getPostById]", error);
     return { isSuccess: false, message: "Internal server error" };
   }
 };
@@ -184,7 +185,7 @@ export const searchPosts = async (query: string | string[]) => {
 
     return posts.documents;
   } catch (error) {
-    console.log(error);
+    console.log("[appwrite/searchPosts]", error);
     throw new Error("Internal server error");
   }
 };
@@ -199,7 +200,7 @@ export const getUserPosts = async (userId: string) => {
 
     return posts.documents;
   } catch (error) {
-    console.log(error);
+    console.log("[appwrite/getUserPosts]", error);
     throw new Error("Internal server error");
   }
 };
@@ -210,7 +211,7 @@ export const signOut = async () => {
 
     return session;
   } catch (error) {
-    console.log(error);
+    console.log("[appwrite/signOut]", error);
     throw new Error("Something went wrong");
   }
 };
@@ -242,7 +243,7 @@ export const getFilePreview = async (fileId: string, type: string) => {
 
     return fileUrl;
   } catch (error) {
-    console.log(error);
+    console.log("[appwrite/getFilePreview]", error);
     return null;
   }
 };
@@ -330,8 +331,6 @@ export const editPost = async (form: EditFormProps) => {
   if (currentUser?.$id !== form.creator?.$id) {
     return { isSuccess: false, message: "Unauthorized" };
   }
-
-  console.log(form);
 
   try {
     const prevPost = await getPostById(form.$id!);
@@ -453,7 +452,7 @@ export const deletePostById = async (postId: string | null) => {
 
     return { isSuccess: true };
   } catch (error) {
-    console.log(error);
+    console.log("[appwrite/deletePostById]", error);
     return { isSuccess: false, message: "Internal server error" };
   }
 };
@@ -486,7 +485,38 @@ export const bookmarkPostById = async (postId: string) => {
 
     return { isSuccess: true, message: "Added Post to Bookmark!" };
   } catch (error) {
-    console.log(error);
+    console.log("[appwrite/bookmarkPostById]", error);
+    return { isSuccess: false, message: "Internal server error" };
+  }
+};
+
+export const getBookmarkedPosts = async (query: string) => {
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser) {
+    return { isSuccess: false, message: "User not found!" };
+  }
+
+  const savedPosts = currentUser.savedPosts;
+
+  const queries = [
+    Query.contains("$id", savedPosts),
+    Query.equal("isPublic", true),
+  ];
+  if (query !== "") {
+    queries.push(Query.search("title", query));
+  }
+
+  try {
+    const posts = await databases.listDocuments(
+      databaseId,
+      videosCollectionId,
+      queries
+    );
+
+    return posts.documents;
+  } catch (error) {
+    console.log("[appwrite/getBookmarkedPosts]", error);
     return { isSuccess: false, message: "Internal server error" };
   }
 };

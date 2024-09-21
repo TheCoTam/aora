@@ -12,6 +12,11 @@ const useAppwrite = (fn: any) => {
     try {
       const res = await fn();
 
+      if (res.isSuccess === false) {
+        Alert.alert("Error", res.message);
+        return;
+      }
+
       setData(res);
     } catch (error) {
       Alert.alert("Error", "Internal server error.");
