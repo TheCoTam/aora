@@ -142,7 +142,11 @@ export const getLatestPosts = async () => {
     const posts = await databases.listDocuments(
       databaseId,
       videosCollectionId,
-      [Query.orderDesc("$createdAt"), Query.limit(3)]
+      [
+        Query.orderDesc("$createdAt"),
+        Query.limit(3),
+        Query.equal("isPublic", true),
+      ]
     );
 
     return posts.documents;
