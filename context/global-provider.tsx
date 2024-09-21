@@ -12,6 +12,7 @@ interface GlobalContextType {
   user: Models.Document | undefined;
   setUser: (user: Models.Document | undefined) => void;
   isLoading: boolean;
+  refetch: () => Promise<void>;
 }
 
 interface GlobalProviderProps {
@@ -25,28 +26,28 @@ const GlobalProvider = ({ children }: GlobalProviderProps) => {
   const [user, setUser] = useState<Models.Document | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
 
+  const fetchData = async () => {
+    setIsLoading(true);
+    const res = await getCurrentUser();
+    if (res.isSuccess) {
+      setIsLoggedIn(true);
+      setUser(res.data);
+    } else {
+      setIsLoggedIn(false);
+      setUser(undefined);
+    }
+    setIsLoading(false);
+  };
+
   useEffect(() => {
-    getCurrentUser()
-      .then((res) => {
-        if (res) {
-          setIsLoggedIn(true);
-          setUser(res);
-        } else {
-          setIsLoggedIn(false);
-          setUser(undefined);
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+    fetchData();
   }, []);
+
+  const refetch = () => fetchData();
 
   return (
     <GlobalContext.Provider
-      value={{ isLoggedIn, setIsLoggedIn, user, setUser, isLoading }}
+      value={{ isLoggedIn, setIsLoggedIn, user, setUser, isLoading, refetch }}
     >
       <PaperProvider>
         <DeletePostProvider>

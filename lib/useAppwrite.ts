@@ -9,20 +9,15 @@ const useAppwrite = (fn: any) => {
   const fetchData = async () => {
     setIsLoading(true);
 
-    try {
-      const res = await fn();
+    const res = await fn();
 
-      if (res.isSuccess === false) {
-        Alert.alert("Error", res.message);
-        return;
-      }
-
-      setData(res);
-    } catch (error) {
-      Alert.alert("Error", "Internal server error.");
-    } finally {
-      setIsLoading(false);
+    if (!res || res.isSuccess === false) {
+      Alert.alert("Error", res.message || "Internal server error!");
+    } else {
+      setData(res.data);
     }
+
+    setIsLoading(false);
   };
 
   useEffect(() => {

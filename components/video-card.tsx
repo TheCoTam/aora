@@ -19,15 +19,22 @@ export interface VideoCardProps {
       avatar: string;
     };
   };
+  refetch?: () => Promise<void>;
 }
 
-const VideoCard = ({ video }: VideoCardProps) => {
+const VideoCard = ({ video, refetch: refetchData }: VideoCardProps) => {
   const { title, thumbnail, creator } = video;
-  const { data: currentUser, refetch } = useAppwrite(getCurrentUser);
+  const { data: currentUser, refetch: refetchUser } =
+    useAppwrite(getCurrentUser);
 
   const isEditable = currentUser?.$id === creator.$id;
   const savedPosts = currentUser?.savedPosts || [];
   const isBookmarked = savedPosts.includes(video.$id);
+
+  const refetch = async () => {
+    refetchUser();
+    refetchData?.();
+  };
 
   const [play, setPlay] = useState(false);
 

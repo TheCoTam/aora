@@ -103,7 +103,7 @@ export const getCurrentUser = async () => {
     const currentAccount = await account.get();
 
     if (!currentAccount) {
-      throw Error;
+      return { isSuccess: false, message: "Account not found" };
     }
 
     const currentUser = await databases.listDocuments(
@@ -113,13 +113,13 @@ export const getCurrentUser = async () => {
     );
 
     if (!currentUser) {
-      throw Error;
+      return { isSuccess: false, message: "User not found" };
     }
 
-    return currentUser.documents[0];
+    return { isSuccess: true, data: currentUser.documents[0] };
   } catch (error) {
     console.log("[appwrite/getCurrentUser]", error);
-    return null;
+    return { isSuccess: false, message: "Internal server error" };
   }
 };
 
@@ -131,9 +131,10 @@ export const getAllPosts = async () => {
       [Query.orderDesc("$createdAt"), Query.equal("isPublic", true)]
     );
 
-    return posts.documents;
+    return { isSuccess: true, data: posts.documents };
   } catch (error) {
-    throw new Error(error as string);
+    console.log("[appwrite/getAllPosts]", error);
+    return { isSuccess: false, message: "Internal server error" };
   }
 };
 
@@ -149,9 +150,10 @@ export const getLatestPosts = async () => {
       ]
     );
 
-    return posts.documents;
+    return { isSuccess: true, data: posts.documents };
   } catch (error) {
-    throw new Error(error as string);
+    console.log("[appwrite/getLatestPosts]", error);
+    return { isSuccess: false, message: "Internal server error" };
   }
 };
 
@@ -159,7 +161,13 @@ export const getPostById = async (
   postId: string | string[]
 ): Promise<
   | Models.Document
-  | { isSuccess: boolean; message: string; thumbnail?: string; video?: string }
+  | {
+      isSuccess: boolean;
+      data?: Models.Document;
+      message?: string;
+      thumbnail?: string;
+      video?: string;
+    }
 > => {
   const searchQuery = Array.isArray(postId) ? postId[0] : postId;
 
@@ -170,7 +178,7 @@ export const getPostById = async (
       searchQuery
     );
 
-    return post;
+    return { isSuccess: true, data: post };
   } catch (error) {
     console.log("[appwrite/getPostById]", error);
     return { isSuccess: false, message: "Internal server error" };
@@ -187,14 +195,21 @@ export const searchPosts = async (query: string | string[]) => {
       [Query.search("title", searchQuery)]
     );
 
-    return posts.documents;
+    return { isSuccess: true, data: posts.documents };
   } catch (error) {
     console.log("[appwrite/searchPosts]", error);
-    throw new Error("Internal server error");
+    return { isSuccess: false, message: "Internal server error" };
   }
 };
 
-export const getUserPosts = async (userId: string) => {
+export const getCurrentUserPosts = async () => {
+  const { data: currentUser } = await getCurrentUser();
+  if (!currentUser) {
+    return { isSuccess: false, message: "User not found" };
+  }
+
+  const userId = currentUser.$id;
+
   try {
     const posts = await databases.listDocuments(
       databaseId,
@@ -202,10 +217,10 @@ export const getUserPosts = async (userId: string) => {
       [Query.equal("creator", userId), Query.orderDesc("$createdAt")]
     );
 
-    return posts.documents;
+    return { isSuccess: true, data: posts.documents };
   } catch (error) {
     console.log("[appwrite/getUserPosts]", error);
-    throw new Error("Internal server error");
+    return { isSuccess: false, message: "Internal server error" };
   }
 };
 
@@ -326,7 +341,7 @@ export const fileIdExtractor = (url: string) => {
 };
 
 export const editPost = async (form: EditFormProps) => {
-  const currentUser = await getCurrentUser();
+  const { data: currentUser } = await getCurrentUser();
 
   if (!currentUser) {
     return { isSuccess: false, message: "User not found" };
@@ -337,7 +352,7 @@ export const editPost = async (form: EditFormProps) => {
   }
 
   try {
-    const prevPost = await getPostById(form.$id!);
+    const { data: prevPost } = await getPostById(form.$id!);
 
     if (prevPost?.isSuccess === false) {
       return { isSuccess: false, message: "Post not found" };
@@ -406,7 +421,7 @@ export const formatFollowers = (followers: number): string => {
 };
 
 export const changeUserFollowers = async (followers: number) => {
-  const currentUser = await getCurrentUser();
+  const { data: currentUser } = await getCurrentUser();
 
   if (!currentUser) {
     return { isSuccess: false, message: "User not found" };
@@ -435,7 +450,7 @@ export const deletePostById = async (postId: string | null) => {
   }
 
   try {
-    const post = await getPostById(postId);
+    const { data: post } = await getPostById(postId);
 
     if (post.isSuccess === false) {
       return { isSuccess: false, message: post.message };
@@ -462,7 +477,7 @@ export const deletePostById = async (postId: string | null) => {
 };
 
 export const bookmarkPostById = async (postId: string) => {
-  const currentUser = await getCurrentUser();
+  const { data: currentUser } = await getCurrentUser();
   if (!currentUser) {
     return { isSuccess: false, message: "User not found!" };
   }
@@ -495,7 +510,7 @@ export const bookmarkPostById = async (postId: string) => {
 };
 
 export const getBookmarkedPosts = async (query: string) => {
-  const currentUser = await getCurrentUser();
+  const { data: currentUser } = await getCurrentUser();
 
   if (!currentUser) {
     return { isSuccess: false, message: "User not found!" };

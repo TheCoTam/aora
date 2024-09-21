@@ -35,14 +35,14 @@ const Bookmark = () => {
     setRefreshing(false);
   };
 
-  console.log(query);
-
   return (
     <SafeAreaView className="bg-primary h-full">
       <FlatList
         data={data}
         keyExtractor={(item) => item.$id}
-        renderItem={({ item }) => <VideoCard video={item} />}
+        renderItem={({ item }) => (
+          <VideoCard video={item} refetch={fetchData} />
+        )}
         ListHeaderComponent={() => (
           <View className="my-6 px-4">
             <Text className="text-3xl text-white font-psemibold mb-4">

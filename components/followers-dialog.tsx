@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
 import { Button, Dialog, Portal } from "react-native-paper";
-import { LoaderCircle } from "lucide-react-native";
 
 import useAppwrite from "@/lib/useAppwrite";
 import {
@@ -11,18 +10,19 @@ import {
 } from "@/lib/appwrite";
 
 import InfoBox from "./info-box";
+import Toast from "react-native-toast-message";
 
 interface FollowersDialogProps {
-  refetch: () => Promise<void>;
+  followers: number;
+  refetch: () => void;
+  isLoading: boolean;
 }
 
-const FollowersDialog = ({ refetch }: FollowersDialogProps) => {
-  const { data } = useAppwrite(getCurrentUser);
-
-  if (!data) {
-    return null;
-  }
-
+const FollowersDialog = ({
+  followers: initialFollowers,
+  refetch,
+  isLoading,
+}: FollowersDialogProps) => {
   const [visible, setVisible] = useState(false);
   const [followers, setFollowers] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
@@ -37,22 +37,34 @@ const FollowersDialog = ({ refetch }: FollowersDialogProps) => {
     }
 
     setLoading(true);
-    await changeUserFollowers(parseInt(followers));
-
-    setFollowers(undefined);
+    const res = await changeUserFollowers(parseInt(followers));
     setLoading(false);
-    hideDialog();
-    await refetch();
+    if (res.isSuccess) {
+      Toast.show({
+        type: "success",
+        text1: "Change Followers",
+        text2: "Followers changed successfully",
+      });
+      setFollowers(undefined);
+      hideDialog();
+      await refetch();
+    } else {
+      Toast.show({
+        type: "error",
+        text1: "Change Followers",
+        text2: res.message,
+      });
+    }
   };
 
   return (
     <View>
-      {data.length === 0 ? (
+      {isLoading ? (
         <Button loading>Followers</Button>
       ) : (
         <TouchableOpacity onPress={showDialog}>
           <InfoBox
-            title={formatFollowers(data.followers || 0)}
+            title={formatFollowers(initialFollowers)}
             subtitle="Followers"
             titleStyle="text-xl"
           />
@@ -63,7 +75,7 @@ const FollowersDialog = ({ refetch }: FollowersDialogProps) => {
           <Dialog.Title>Change Followers</Dialog.Title>
           <Dialog.Content>
             <Text className="text-white font-pregular mb-1">
-              Your current followers: {data.followers || 0}
+              Your current followers: {initialFollowers}
             </Text>
             <Text className="text-white font-pregular mb-4">
               The number of followers you want?
@@ -80,7 +92,9 @@ const FollowersDialog = ({ refetch }: FollowersDialogProps) => {
             </View>
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={hideDialog}>Cancel</Button>
+            <Button onPress={hideDialog} disabled={loading}>
+              Cancel
+            </Button>
             <Button
               onPress={changeFollowers}
               disabled={followers === undefined || loading}
