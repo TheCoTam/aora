@@ -539,3 +539,41 @@ export const getBookmarkedPosts = async (query: string) => {
     return { isSuccess: false, message: "Internal server error" };
   }
 };
+
+export const changeUserData = async (
+  type: string,
+  value: string,
+  subValue?: string
+) => {
+  const { data: currentUser } = await getCurrentUser();
+  if (!currentUser) {
+    return { isSuccess: false, message: "User not found" };
+  }
+
+  const userId = currentUser.$id;
+  let finalValue: string | number = value;
+
+  if (type === "username") {
+    account.updateName(value);
+  }
+
+  if (type === "email") {
+    // TODO: take password to param
+    account.updateEmail(value);
+  }
+
+  if (type === "followers") {
+    finalValue = parseInt(value);
+  }
+
+  try {
+    await databases.updateDocument(databaseId, userCollectionId, userId, {
+      [type]: finalValue,
+    });
+
+    return { isSuccess: true };
+  } catch (error) {
+    console.log("[appwrite/changeUserData]", error);
+    return { isSuccess: false, message: "Internal server error." };
+  }
+};

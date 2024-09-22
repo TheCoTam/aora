@@ -66,7 +66,11 @@ const Profile = () => {
         ListHeaderComponent={() => (
           <View className="w-full justify-center items-center mt-6 mb-12 px-4">
             <View className="w-full mb-10 flex-row items-center justify-end space-x-4">
-              <TouchableOpacity onPress={() => {}}>
+              <TouchableOpacity
+                onPress={() => {
+                  router.push("/settings");
+                }}
+              >
                 <Settings strokeWidth={2.5} className="w-6 h-6 text-blue-400" />
               </TouchableOpacity>
               <TouchableOpacity onPress={logout}>

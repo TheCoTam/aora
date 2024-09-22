@@ -8,7 +8,6 @@ import EmptyState from "@/components/empty-state";
 import VideoCard, { VideoCardProps } from "@/components/video-card";
 
 const Bookmark = () => {
-  // const { data, isLoading, refetch } = useAppwrite(getBookmarkedPosts);
   const [data, setData] = useState<VideoCardProps["video"][] | null>(null);
   const [query, setQuery] = useState("");
   const [refreshing, setRefreshing] = useState(false);
