@@ -540,6 +540,11 @@ export const getBookmarkedPosts = async (query: string) => {
   }
 };
 
+export const isEmail = (email: string) => {
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailPattern.test(email);
+};
+
 export const changeUserData = async (
   type: string,
   value: string,
@@ -558,8 +563,23 @@ export const changeUserData = async (
   }
 
   if (type === "email") {
+    if (!isEmail(value)) {
+      return { isSuccess: false, message: "Invalid email address!" };
+    }
+
+    if (!subValue) {
+      return { isSuccess: false, message: "Your password is required!" };
+    }
+
+    try {
+      await account.updateEmail(value, subValue);
+    } catch (error) {
+      console.log("[appwrite/changeUserData/changeEmail]", error);
+      return { isSuccess: false, message: "Something went wrong!" };
+    }
+
+    // return { isSuccess: true };
     // TODO: take password to param
-    account.updateEmail(value);
   }
 
   if (type === "followers") {

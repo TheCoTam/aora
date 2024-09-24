@@ -22,6 +22,7 @@ export const SettingsFormField = ({
 Props) => {
   const isAvatarForm = type === "avatar";
   const isPasswordForm = type === "password";
+  const isEmailForm = type === "email";
   const isValueNotString = type === "followers";
 
   const defaultValue = isPasswordForm ? "" : value;
@@ -54,13 +55,11 @@ Props) => {
         text1: `Change ${type}`,
         text2: `${title} changed!`,
       });
+      setIsEditing(false);
+      setConfirmPassword("");
+      await refetch();
     }
-
-    setIsEditing(false);
-    await refetch();
   };
-
-  console.log(newValue);
 
   return (
     <View className="space-y-2 mt-5">
@@ -87,6 +86,8 @@ Props) => {
                 placeholderTextColor="#7b7b8b"
                 secureTextEntry={isPasswordForm && !showPassword}
                 {...(isValueNotString && { keyboardType: "numeric" })}
+                {...(isEmailForm && { keyboardType: "email-address" })}
+                editable={!isLoading}
               />
               {newValue !== "" && !isPasswordForm && (
                 <TouchableOpacity
@@ -112,17 +113,22 @@ Props) => {
                 </TouchableOpacity>
               )}
             </View>
-            {isPasswordForm && (
+            {(isPasswordForm || isEmailForm) && (
               <View className="flex-row items-center p-2 bg-black-100 border border-black-200 rounded-lg focus:border-secondary">
                 <TextInput
                   className="flex-1 text-white text-lg"
                   value={confirmPassword}
                   onChangeText={(e) => setConfirmPassword(e)}
-                  placeholder={`Confirm your new password!`}
+                  placeholder={`${
+                    isPasswordForm ? "Confirm your new password!" : ""
+                  }${isEmailForm ? "Enter your current password!" : ""}`}
                   placeholderTextColor="#7b7b8b"
-                  secureTextEntry={isPasswordForm && !showConfirmPassword}
+                  secureTextEntry={
+                    (isPasswordForm || isEmailForm) && !showConfirmPassword
+                  }
+                  editable={!isLoading}
                 />
-                {confirmPassword !== "" && isPasswordForm && (
+                {confirmPassword !== "" && (isPasswordForm || isEmailForm) && (
                   <TouchableOpacity
                     onPress={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
