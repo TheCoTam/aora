@@ -25,13 +25,16 @@ Props) => {
   const isEmailForm = type === "email";
   const isValueNotString = type === "followers";
 
+  const currentPasswordInputVisible = isPasswordForm || isEmailForm;
   const defaultValue = isPasswordForm ? "" : value;
 
   const [isEditing, setIsEditing] = useState(false);
   const [newValue, setNewValue] = useState<string>(defaultValue || "");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const isSaveButtonDisabled = isPasswordForm
@@ -39,8 +42,16 @@ Props) => {
     : newValue === "" || newValue === value || isLoading;
 
   const handlePress = async () => {
+    if (isPasswordForm && newValue !== confirmPassword) {
+      Toast.show({
+        type: "error",
+        text1: "Change Password",
+        text2: "Passwords do not match!",
+      });
+      return;
+    }
     setIsLoading(true);
-    const res = await changeUserData(type, newValue, confirmPassword);
+    const res = await changeUserData(type, newValue, currentPassword);
     setIsLoading(false);
 
     if (res.isSuccess === false) {
@@ -56,6 +67,7 @@ Props) => {
         text2: `${title} changed!`,
       });
       setIsEditing(false);
+      setCurrentPassword("");
       setConfirmPassword("");
       await refetch();
     }
@@ -80,7 +92,7 @@ Props) => {
             <View className="flex-row items-center p-2 bg-black-100 border border-black-200 rounded-lg focus:border-secondary">
               <TextInput
                 className="flex-1 text-white text-lg"
-                value={newValue.toString()}
+                value={newValue?.toString()}
                 onChangeText={(e) => setNewValue(e)}
                 placeholder={`Enter your new ${type}!`}
                 placeholderTextColor="#7b7b8b"
@@ -113,22 +125,18 @@ Props) => {
                 </TouchableOpacity>
               )}
             </View>
-            {(isPasswordForm || isEmailForm) && (
+            {isPasswordForm && (
               <View className="flex-row items-center p-2 bg-black-100 border border-black-200 rounded-lg focus:border-secondary">
                 <TextInput
                   className="flex-1 text-white text-lg"
                   value={confirmPassword}
                   onChangeText={(e) => setConfirmPassword(e)}
-                  placeholder={`${
-                    isPasswordForm ? "Confirm your new password!" : ""
-                  }${isEmailForm ? "Enter your current password!" : ""}`}
+                  placeholder="Confirm your new password!"
                   placeholderTextColor="#7b7b8b"
-                  secureTextEntry={
-                    (isPasswordForm || isEmailForm) && !showConfirmPassword
-                  }
+                  secureTextEntry={!showConfirmPassword}
                   editable={!isLoading}
                 />
-                {confirmPassword !== "" && (isPasswordForm || isEmailForm) && (
+                {confirmPassword !== "" && (
                   <TouchableOpacity
                     onPress={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
@@ -141,10 +149,36 @@ Props) => {
                 )}
               </View>
             )}
+            {currentPasswordInputVisible && (
+              <View className="flex-row items-center p-2 bg-black-100 border border-black-200 rounded-lg focus:border-secondary">
+                <TextInput
+                  className="flex-1 text-white text-lg"
+                  value={currentPassword}
+                  onChangeText={(e) => setCurrentPassword(e)}
+                  placeholder="Enter your current password!"
+                  placeholderTextColor="#7b7b8b"
+                  secureTextEntry={!showCurrentPassword}
+                  editable={!isLoading}
+                />
+                {currentPassword !== "" && (
+                  <TouchableOpacity
+                    onPress={() => setShowCurrentPassword(!showCurrentPassword)}
+                  >
+                    {!showCurrentPassword ? (
+                      <Eye size={18} className="text-white rounded-full" />
+                    ) : (
+                      <EyeOff size={18} className="text-white rounded-full" />
+                    )}
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
             <View className="flex-row">
               <Button
                 onPress={() => {
                   setNewValue(defaultValue);
+                  setConfirmPassword("");
+                  setCurrentPassword("");
                   setIsEditing(false);
                 }}
                 disabled={isLoading}

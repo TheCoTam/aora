@@ -417,7 +417,7 @@ export const formatFollowers = (followers: number): string => {
     }
     return followersInThousand.toFixed(0) + "K";
   }
-  return followers.toString();
+  return followers?.toString();
 };
 
 export const changeUserFollowers = async (followers: number) => {
@@ -577,13 +577,25 @@ export const changeUserData = async (
       console.log("[appwrite/changeUserData/changeEmail]", error);
       return { isSuccess: false, message: "Something went wrong!" };
     }
-
-    // return { isSuccess: true };
-    // TODO: take password to param
   }
 
   if (type === "followers") {
     finalValue = parseInt(value);
+  }
+
+  if (type === "password") {
+    if (!subValue) {
+      return { isSuccess: false, message: "Your old password is required!" };
+    }
+
+    try {
+      await account.updatePassword(value, subValue);
+
+      return { isSuccess: true };
+    } catch (error) {
+      console.log("[appwrite/changeUserData/changePassword]", error);
+      return { isSuccess: false, message: "Something went wrong!" };
+    }
   }
 
   try {
